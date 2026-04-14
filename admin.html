@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PTMS - Admin Bookings</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: #eef3f9;
+      color: #1f2937;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .card {
+      max-width: 1100px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
+    }
+
+    h1 {
+      color: #0b3d91;
+      margin-bottom: 14px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    input {
+      padding: 10px;
+      border: 1px solid #cfd8e3;
+      border-radius: 8px;
+      min-width: 250px;
+    }
+
+    button {
+      border: none;
+      background: #1d4ed8;
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    button.secondary {
+      background: #4b5563;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+
+    th,
+    td {
+      border: 1px solid #d9e1eb;
+      padding: 10px;
+      text-align: left;
+    }
+
+    th {
+      background: #f4f7fb;
+      color: #1e3a8a;
+    }
+
+    #status {
+      margin-top: 8px;
+      min-height: 20px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <section class="card">
+    <h1>Admin - All Bookings</h1>
+    <div class="controls">
+      <input id="adminKey" type="password" placeholder="Enter admin key (default: admin123)">
+      <button id="loadBtn" type="button">Load All Bookings</button>
+      <button class="secondary" type="button" onclick="window.location.href='index.html'">Back</button>
+    </div>
+    <p id="status"></p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>User Email</th>
+            <th>Passenger</th>
+            <th>From</th>
+            <th>Destination</th>
+            <th>Date</th>
+            <th>Bus Type</th>
+            <th>Seats</th>
+            <th>Created At</th>
+          </tr>
+        </thead>
+        <tbody id="adminBookingsBody">
+          <tr>
+            <td colspan="9">Enter admin key and click "Load All Bookings".</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <script>
+    const API_BASE = "http://localhost:3000";
+    const loadBtn = document.getElementById("loadBtn");
+    const adminKeyInput = document.getElementById("adminKey");
+    const status = document.getElementById("status");
+    const adminBookingsBody = document.getElementById("adminBookingsBody");
+
+    loadBtn.addEventListener("click", async function () {
+      const adminKey = adminKeyInput.value.trim();
+      if (!adminKey) {
+        status.style.color = "#cc1f1f";
+        status.textContent = "Please enter admin key.";
+        return;
+      }
+
+      try {
+        const response = await fetch(API_BASE + "/api/admin/bookings?adminKey=" + encodeURIComponent(adminKey));
+        const bookings = await response.json();
+
+        if (!response.ok) {
+          status.style.color = "#cc1f1f";
+          status.textContent = bookings.message || "Failed to load bookings.";
+          adminBookingsBody.innerHTML = "<tr><td colspan='9'>Unauthorized or no data.</td></tr>";
+          return;
+        }
+
+        status.style.color = "#0f7a26";
+        status.textContent = "Loaded " + bookings.length + " bookings.";
+
+        if (!bookings.length) {
+          adminBookingsBody.innerHTML = "<tr><td colspan='9'>No bookings found.</td></tr>";
+          return;
+        }
+
+        adminBookingsBody.innerHTML = bookings.map(function (booking) {
+          return "<tr>" +
+            "<td>" + booking.id + "</td>" +
+            "<td>" + booking.user_email + "</td>" +
+            "<td>" + booking.passenger_name + "</td>" +
+            "<td>" + booking.source + "</td>" +
+            "<td>" + booking.destination + "</td>" +
+            "<td>" + booking.travel_date + "</td>" +
+            "<td>" + booking.bus_type + "</td>" +
+            "<td>" + booking.seats + "</td>" +
+            "<td>" + booking.created_at + "</td>" +
+            "</tr>";
+        }).join("");
+      } catch (error) {
+        status.style.color = "#cc1f1f";
+        status.textContent = "Server not running. Start Node backend first.";
+      }
+    });
+  </script>
+</body>
+</html>

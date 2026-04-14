@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PTMS - Login</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #0b3d91, #2a9df4);
+      padding: 20px;
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 420px;
+      background: #fff;
+      border-radius: 14px;
+      padding: 28px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22);
+    }
+
+    h1 {
+      color: #0b3d91;
+      font-size: 24px;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    p.subtitle {
+      text-align: center;
+      color: #555;
+      margin-bottom: 22px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      color: #333;
+      font-weight: 600;
+    }
+
+    input {
+      width: 100%;
+      border: 1px solid #c9d2df;
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 14px;
+      font-size: 15px;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #2a9df4;
+      box-shadow: 0 0 0 3px rgba(42, 157, 244, 0.2);
+    }
+
+    button {
+      width: 100%;
+      border: none;
+      border-radius: 8px;
+      background: #0b3d91;
+      color: #fff;
+      padding: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    button:hover {
+      background: #082f6f;
+    }
+
+    #message {
+      margin-top: 12px;
+      text-align: center;
+      font-size: 14px;
+      color: #cc1f1f;
+      min-height: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <h1>Public Transport Management System</h1>
+    <p class="subtitle">Login to continue to bus booking</p>
+
+    <form id="loginForm">
+      <label for="email">Email</label>
+      <input type="email" id="email" required placeholder="yourname@email.com">
+
+      <label for="password">Password</label>
+      <input type="password" id="password" required placeholder="Enter password">
+
+      <button type="submit">Login</button>
+      <p id="message"></p>
+    </form>
+  </div>
+
+  <script>
+    const API_BASE = "http://localhost:3000";
+    const loginForm = document.getElementById("loginForm");
+    const message = document.getElementById("message");
+
+    loginForm.addEventListener("submit", async function (event) {
+      event.preventDefault();
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+
+      if (!email || !password) {
+        message.textContent = "Please enter email and password.";
+        return;
+      }
+
+      try {
+        const response = await fetch(API_BASE + "/api/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          message.textContent = data.message || "Login failed.";
+          return;
+        }
+
+        localStorage.setItem("ptmsLoggedInUser", email);
+        window.location.href = "index.html";
+      } catch (error) {
+        message.textContent = "Server not running. Start Node backend first.";
+      }
+    });
+  </script>
+</body>
+</html>
